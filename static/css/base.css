@@ -1,0 +1,148 @@
+:root {
+    --color-gold: #8B6914;
+    --color-gold-light: #F2ECD8;
+    --color-dark: #1a1a1a;
+    --color-sidebar: #111111;
+}
+
+body {
+    background-color: #f5f5f5;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* SIDEBAR */
+.sidebar {
+    width: 250px;
+    min-height: 100vh;
+    background-color: var(--color-sidebar);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-logo {
+    padding: 24px 20px;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.sidebar-logo span {
+    color: var(--color-gold);
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.sidebar-logo small {
+    display: block;
+    color: #666;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+}
+
+.sidebar-nav {
+    padding: 16px 0;
+    flex: 1;
+}
+
+.sidebar-nav .nav-item a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    color: #aaa;
+    text-decoration: none;
+    font-size: 0.88rem;
+    transition: all 0.2s;
+}
+
+.sidebar-nav .nav-item a:hover,
+.sidebar-nav .nav-item a.active {
+    color: #fff;
+    background-color: #1e1e1e;
+    border-left: 3px solid var(--color-gold);
+}
+
+.sidebar-nav .nav-item a i {
+    font-size: 1rem;
+    color: var(--color-gold);
+}
+
+.sidebar-section {
+    padding: 8px 20px 4px;
+    font-size: 0.7rem;
+    color: #444;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid #2a2a2a;
+}
+
+.sidebar-footer .user-info {
+    color: #aaa;
+    font-size: 0.8rem;
+}
+
+.sidebar-footer .user-name {
+    color: #fff;
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+/* MAIN CONTENT */
+.main-content {
+    margin-left: 250px;
+    min-height: 100vh;
+}
+
+.topbar {
+    background-color: #fff;
+    border-bottom: 1px solid #e5e5e5;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.topbar .page-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-dark);
+    margin: 0;
+}
+
+.content-area {
+    padding: 24px;
+}
+
+/* CARDS */
+.card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.card-header {
+    background-color: #fff;
+    border-bottom: 1px solid #f0f0f0;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* BUTTONS */
+.btn-gold {
+    background-color: var(--color-gold);
+    color: #fff;
+    border: none;
+}
+
+.btn-gold:hover {
+    background-color: #7a5c10;
+    color: #fff;
+}

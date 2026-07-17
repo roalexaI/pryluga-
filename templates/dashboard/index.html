@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard — Pryluga{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    <!-- Reservas hoy -->
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div style="font-size:0.8rem; color:#888;">Reservas hoy</div>
+                        <div style="font-size:1.8rem; font-weight:700; color:#1a1a1a;">{{ reservas_hoy }}</div>
+                    </div>
+                    <i class="bi bi-calendar-check" style="font-size:2rem; color:#8B6914;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pendientes de pago -->
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div style="font-size:0.8rem; color:#888;">Saldos pendientes</div>
+                        <div style="font-size:1.8rem; font-weight:700; color:#1a1a1a;">${{ saldos_pendientes }}</div>
+                    </div>
+                    <i class="bi bi-cash-stack" style="font-size:2rem; color:#8B6914;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clientes -->
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div style="font-size:0.8rem; color:#888;">Clientes registrados</div>
+                        <div style="font-size:1.8rem; font-weight:700; color:#1a1a1a;">{{ total_clientes }}</div>
+                    </div>
+                    <i class="bi bi-people" style="font-size:2rem; color:#8B6914;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Servicios -->
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div style="font-size:0.8rem; color:#888;">Servicios activos</div>
+                        <div style="font-size:1.8rem; font-weight:700; color:#1a1a1a;">{{ total_servicios }}</div>
+                    </div>
+                    <i class="bi bi-scissors" style="font-size:2rem; color:#8B6914;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Reservas del día -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Reservas de hoy</span>
+                <a href="/reservas/" class="btn btn-gold btn-sm">Ver todas</a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead style="background:#fafafa; font-size:0.82rem; color:#888;">
+                        <tr>
+                            <th class="px-4 py-3">Cliente</th>
+                            <th>Servicio</th>
+                            <th>Especialista</th>
+                            <th>Hora</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody style="font-size:0.88rem;">
+                        {% for reserva in reservas_del_dia %}
+                        <tr>
+                            <td class="px-4">{{ reserva.cliente.nombre_completo }}</td>
+                            <td>{{ reserva.servicio.nombre }}</td>
+                            <td>{{ reserva.especialista.nombre_completo }}</td>
+                            <td>{{ reserva.hora_inicio }}</td>
+                            <td>
+                                {% if reserva.estado == 'pendiente' %}
+                                    <span class="badge" style="background:#fff3cd; color:#856404;">Pendiente</span>
+                                {% elif reserva.estado == 'confirmada' %}
+                                    <span class="badge" style="background:#d1e7dd; color:#0f5132;">Confirmada</span>
+                                {% elif reserva.estado == 'en_proceso' %}
+                                    <span class="badge" style="background:#cfe2ff; color:#084298;">En proceso</span>
+                                {% elif reserva.estado == 'completada' %}
+                                    <span class="badge" style="background:#d1e7dd; color:#0f5132;">Completada</span>
+                                {% elif reserva.estado == 'cancelada' %}
+                                    <span class="badge" style="background:#f8d7da; color:#842029;">Cancelada</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4" style="color:#aaa; font-size:0.85rem;">
+                                No hay reservas para hoy
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
