@@ -39,6 +39,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'apps.tenants.middleware.TenantMiddleware',
+    'apps.tenants.middleware.TenantMiddleware',
+    'apps.tenants.license_middleware.LicenseMiddleware',
 ]
 
 ROOT_URLCONF = 'pryluga.urls'

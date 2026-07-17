@@ -19,113 +19,84 @@
 <body>
 
 {% if user.is_authenticated %}
-<div class="sidebar">
-    <div class="sidebar-logo">
+
+<!-- TOPBAR -->
+<nav class="topbar-main">
+
+    <!-- Logo -->
+    <a href="/dashboard/" class="topbar-logo">
         {% if tenant and tenant.configuracion.logo %}
-            <img src="{{ tenant.configuracion.logo.url }}" alt="Logo" style="height:36px;">
+            <img src="{{ tenant.configuracion.logo.url }}" alt="Logo" style="height:32px;">
         {% else %}
-            <span>Luga</span>
+            Luga
             <small>love what you do</small>
         {% endif %}
+    </a>
+
+    <!-- Nav links escritorio -->
+    <div class="topbar-nav">
+        <a href="/dashboard/" class="{% if request.path == '/dashboard/' %}active{% endif %}">
+            <i class="bi bi-grid-1x2"></i> Dashboard
+        </a>
+
+        {% for opcion in opciones_menu %}
+        <a href="/{{ opcion.codigo }}/" class="{% if request.path == '/'|add:opcion.codigo|add:'/' %}active{% endif %}">
+            <i class="bi {{ opcion.icono }}"></i> {{ opcion.nombre }}
+        </a>
+        {% endfor %}
     </div>
 
-    <nav class="sidebar-nav">
-        <ul class="nav flex-column list-unstyled">
-
-            <li class="nav-item">
-                <a href="/dashboard/">
-                    <i class="bi bi-grid-1x2"></i> Dashboard
-                </a>
-            </li>
-
-            {% if user|tiene_acceso:'reservas' or user.es_admin %}
-            <li class="sidebar-section">Operaciones</li>
-            <li class="nav-item">
-                <a href="/reservas/">
-                    <i class="bi bi-calendar-check"></i> Reservas
-                </a>
-            </li>
-            {% endif %}
-
-            {% if user|tiene_acceso:'agenda' or user.es_admin %}
-            <li class="nav-item">
-                <a href="/agenda/">
-                    <i class="bi bi-calendar3"></i> Agenda
-                </a>
-            </li>
-            {% endif %}
-
-            {% if user|tiene_acceso:'servicios' or user.es_admin %}
-            <li class="sidebar-section">Catálogo</li>
-            <li class="nav-item">
-                <a href="/servicios/">
-                    <i class="bi bi-scissors"></i> Servicios
-                </a>
-            </li>
-            {% endif %}
-
-            {% if user|tiene_acceso:'finanzas' or user.es_admin %}
-            <li class="sidebar-section">Finanzas</li>
-            <li class="nav-item">
-                <a href="/finanzas/">
-                    <i class="bi bi-cash-stack"></i> Finanzas
-                </a>
-            </li>
-            {% endif %}
-
-            {% if user|tiene_acceso:'facturacion' or user.es_admin %}
-            <li class="nav-item">
-                <a href="/facturacion/">
-                    <i class="bi bi-receipt"></i> Facturación
-                </a>
-            </li>
-            {% endif %}
-
-            {% if user.es_admin %}
-            <li class="sidebar-section">Administración</li>
-            <li class="nav-item">
-                <a href="/configuracion/">
-                    <i class="bi bi-gear"></i> Configuración
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="/auth/usuarios/">
-                    <i class="bi bi-people"></i> Usuarios
-                </a>
-            </li>
-            {% endif %}
-
-        </ul>
-    </nav>
-
-    <div class="sidebar-footer">
-        <div class="user-name">{{ user.nombre_completo }}</div>
-        <div class="user-info">{{ user.rol.nombre|default:"Superadmin" }}</div>
-        <a href="/auth/logout/" class="text-danger text-decoration-none mt-2 d-block" style="font-size:0.8rem;">
-            <i class="bi bi-box-arrow-left"></i> Cerrar sesión
+    <!-- Usuario -->
+    <div class="topbar-user">
+        <div>
+            <div class="user-name">{{ user.nombre_completo }}</div>
+            <div class="user-role">{{ user.rol.nombre|default:"Superadmin" }}</div>
+        </div>
+        <a href="/auth/logout/" class="btn-logout" title="Cerrar sesión">
+            <i class="bi bi-box-arrow-right"></i>
         </a>
     </div>
+
+    <!-- Toggle mobile -->
+    <button class="topbar-toggle" id="mobileToggle">
+        <i class="bi bi-list"></i>
+    </button>
+
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+    <a href="/dashboard/">
+        <i class="bi bi-grid-1x2"></i> Dashboard
+    </a>
+    {% for opcion in opciones_menu %}
+    <a href="/{{ opcion.codigo }}/">
+        <i class="bi {{ opcion.icono }}"></i> {{ opcion.nombre }}
+    </a>
+    {% endfor %}
+    <div class="menu-section">Cuenta</div>
+    <a href="/auth/logout/" style="color:#e74c3c;">
+        <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+    </a>
 </div>
 
-<div class="main-content">
-    <div class="topbar">
-        <h1 class="page-title">{% block page_title %}{% endblock %}</h1>
-        <div class="d-flex align-items-center gap-3">
-            <span style="font-size:0.85rem; color:#888;">{{ tenant.nombre|default:"" }}</span>
-        </div>
+<!-- CONTENT -->
+<div class="content-area">
+    <div class="page-header">
+        <h1>{% block page_title %}{% endblock %}</h1>
+        {% block page_actions %}{% endblock %}
     </div>
-    <div class="content-area">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
 
-        {% block content %}{% endblock %}
-    </div>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% block content %}{% endblock %}
 </div>
 
 {% else %}

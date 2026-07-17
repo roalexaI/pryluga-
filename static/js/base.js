@@ -9,13 +9,24 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// Marcar enlace activo en sidebar
+// Marcar enlace activo en topbar
 document.addEventListener('DOMContentLoaded', function () {
     const currentPath = window.location.pathname;
-    const navLinks = document.querySelectorAll('.sidebar-nav .nav-item a');
+    const navLinks = document.querySelectorAll('.topbar-nav a, .mobile-menu a');
     navLinks.forEach(function (link) {
         if (link.getAttribute('href') === currentPath) {
             link.classList.add('active');
         }
     });
+});
+
+// Toggle menú móvil
+document.addEventListener('DOMContentLoaded', function () {
+    const toggle = document.getElementById('mobileToggle');
+    const menu = document.getElementById('mobileMenu');
+    if (toggle && menu) {
+        toggle.addEventListener('click', function () {
+            menu.classList.toggle('open');
+        });
+    }
 });
