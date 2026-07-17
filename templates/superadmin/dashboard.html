@@ -1,0 +1,144 @@
+{% extends 'superadmin/base.html' %}
+
+{% block title %}Dashboard — Superadmin{% endblock %}
+
+{% block content %}
+<div class="sa-page-title">Dashboard</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="sa-card">
+            <div class="sa-card-header"><i class="bi bi-buildings"></i> Tenants activos</div>
+            <div class="sa-card-value">{{ total_tenants }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="sa-card">
+            <div class="sa-card-header"><i class="bi bi-geo-alt"></i> Sucursales activas</div>
+            <div class="sa-card-value">{{ total_sucursales }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="sa-card">
+            <div class="sa-card-header"><i class="bi bi-exclamation-triangle"></i> Por vencer</div>
+            <div class="sa-card-value" style="color:#f0b429;">{{ proximas_a_vencer.count }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="sa-card">
+            <div class="sa-card-header"><i class="bi bi-receipt"></i> Pagos pendientes</div>
+            <div class="sa-card-value" style="color:#f0b429;">{{ pagos_pendientes.count }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Pagos pendientes -->
+{% if pagos_pendientes %}
+<div class="sa-card mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div style="color:#fff; font-weight:600; font-size:0.9rem;">
+            <i class="bi bi-receipt" style="color:var(--gold);"></i> Pagos pendientes de revisión
+        </div>
+        <a href="/superadmin/pagos/" class="btn-sa">Ver todos</a>
+    </div>
+    <table class="sa-table">
+        <thead>
+            <tr>
+                <th>Tenant</th>
+                <th>Sucursal</th>
+                <th>Monto</th>
+                <th>Fecha pago</th>
+                <th>Subido</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pago in pagos_pendientes %}
+            <tr>
+                <td>{{ pago.sucursal.tenant.nombre }}</td>
+                <td>{{ pago.sucursal.nombre }}</td>
+                <td style="color:#fff;">${{ pago.monto }}</td>
+                <td>{{ pago.fecha_pago }}</td>
+                <td>{{ pago.fecha_subida|date:"d/m/Y H:i" }}</td>
+                <td>
+                    <a href="{{ pago.comprobante.url }}" target="_blank" class="btn-sa" style="margin-right:6px;">
+                        <i class="bi bi-eye"></i> Ver
+                    </a>
+                    <form method="post" action="/superadmin/pagos/{{ pago.id }}/aprobar/"
+                          style="display:inline;"
+                          data-confirm="¿Aprobar este pago y activar la licencia?">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-sa">
+                            <i class="bi bi-check-lg"></i> Aprobar
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Licencias por vencer -->
+{% if proximas_a_vencer %}
+<div class="sa-card mb-4">
+    <div style="color:#fff; font-weight:600; font-size:0.9rem; margin-bottom:16px;">
+        <i class="bi bi-exclamation-triangle" style="color:#f0b429;"></i> Licencias próximas a vencer
+    </div>
+    <table class="sa-table">
+        <thead>
+            <tr>
+                <th>Tenant</th>
+                <th>Sucursal</th>
+                <th>Vence</th>
+                <th>Días restantes</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for licencia in proximas_a_vencer %}
+            <tr>
+                <td>{{ licencia.sucursal.tenant.nombre }}</td>
+                <td>{{ licencia.sucursal.nombre }}</td>
+                <td>{{ licencia.fecha_vencimiento }}</td>
+                <td style="color:#f0b429; font-weight:600;">{{ licencia.dias_restantes }} días</td>
+                <td><span class="badge-activa">Activa</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Licencias vencidas -->
+{% if vencidas %}
+<div class="sa-card">
+    <div style="color:#fff; font-weight:600; font-size:0.9rem; margin-bottom:16px;">
+        <i class="bi bi-shield-x" style="color:#e74c3c;"></i> Licencias vencidas
+    </div>
+    <table class="sa-table">
+        <thead>
+            <tr>
+                <th>Tenant</th>
+                <th>Sucursal</th>
+                <th>Venció</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for licencia in vencidas %}
+            <tr>
+                <td>{{ licencia.sucursal.tenant.nombre }}</td>
+                <td>{{ licencia.sucursal.nombre }}</td>
+                <td style="color:#e74c3c;">{{ licencia.fecha_vencimiento }}</td>
+                <td><span class="badge-vencida">Vencida</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% endblock %}

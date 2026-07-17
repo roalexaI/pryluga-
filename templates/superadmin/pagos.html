@@ -1,0 +1,73 @@
+{% extends 'superadmin/base.html' %}
+
+{% block title %}Pagos de Licencia — Superadmin{% endblock %}
+
+{% block content %}
+<div class="sa-page-title">Pagos de Licencia</div>
+
+<div class="sa-card">
+    <table class="sa-table">
+        <thead>
+            <tr>
+                <th>Tenant</th>
+                <th>Sucursal</th>
+                <th>Monto</th>
+                <th>Fecha pago</th>
+                <th>Subido</th>
+                <th>Comprobante</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pago in pagos %}
+            <tr>
+                <td>{{ pago.sucursal.tenant.nombre }}</td>
+                <td style="color:#fff;">{{ pago.sucursal.nombre }}</td>
+                <td style="color:#fff;">${{ pago.monto }}</td>
+                <td>{{ pago.fecha_pago }}</td>
+                <td>{{ pago.fecha_subida|date:"d/m/Y H:i" }}</td>
+                <td>
+                    <a href="{{ pago.comprobante.url }}" target="_blank" style="color:var(--gold); font-size:0.82rem;">
+                        <i class="bi bi-eye"></i> Ver
+                    </a>
+                </td>
+                <td>
+                    <span class="badge-{{ pago.estado }}">{{ pago.get_estado_display }}</span>
+                </td>
+                <td>
+                    {% if pago.estado == 'pendiente' %}
+                    <div class="d-flex gap-2">
+                        <form method="post" action="/superadmin/pagos/{{ pago.id }}/aprobar/"
+                              data-confirm="¿Aprobar este pago y activar la licencia?">
+                            {% csrf_token %}
+                            <input type="hidden" name="observacion" value="">
+                            <button type="submit" class="btn-sa">
+                                <i class="bi bi-check-lg"></i> Aprobar
+                            </button>
+                        </form>
+                        <form method="post" action="/superadmin/pagos/{{ pago.id }}/rechazar/"
+                              data-confirm="¿Rechazar este pago?">
+                            {% csrf_token %}
+                            <input type="hidden" name="observacion" value="">
+                            <button type="submit" class="btn-sa-danger">
+                                <i class="bi bi-x-lg"></i> Rechazar
+                            </button>
+                        </form>
+                    </div>
+                    {% else %}
+                        <span style="color:#444; font-size:0.78rem;">
+                            {{ pago.fecha_revision|date:"d/m/Y" }}
+                        </span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" style="color:#444; text-align:center;">No hay pagos registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

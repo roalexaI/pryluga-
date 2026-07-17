@@ -25,6 +25,7 @@ LOCAL_APPS = [
     'apps.finanzas',
     'apps.facturacion',
     'apps.notificaciones',
+    'apps.superadmin',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS

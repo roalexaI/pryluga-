@@ -1,0 +1,84 @@
+{% extends 'superadmin/base.html' %}
+
+{% block title %}Tenants — Superadmin{% endblock %}
+
+{% block content %}
+<div class="sa-page-title">Tenants</div>
+
+{% for tenant in tenants %}
+<div class="sa-card mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <div style="color:#fff; font-weight:700; font-size:1rem;">{{ tenant.nombre }}</div>
+            <div style="color:#444; font-size:0.75rem;">{{ tenant.slug }}</div>
+        </div>
+        <span class="{% if tenant.activo %}badge-activa{% else %}badge-vencida{% endif %}">
+            {% if tenant.activo %}Activo{% else %}Inactivo{% endif %}
+        </span>
+    </div>
+
+    <table class="sa-table">
+        <thead>
+            <tr>
+                <th>Sucursal</th>
+                <th>Principal</th>
+                <th>Licencia</th>
+                <th>Vencimiento</th>
+                <th>Días restantes</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sucursal in tenant.sucursales.all %}
+            {% with licencia=sucursal.licencia_activa %}
+            <tr>
+                <td style="color:#fff;">{{ sucursal.nombre }}</td>
+                <td>
+                    {% if sucursal.es_principal %}
+                        <span style="color:var(--gold); font-size:0.75rem;">
+                            <i class="bi bi-star-fill"></i> Principal
+                        </span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if licencia %}
+                        ${{ licencia.monto }}/mes
+                    {% else %}
+                        <span style="color:#444;">Sin licencia</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if licencia %}
+                        {{ licencia.fecha_vencimiento }}
+                    {% else %}—{% endif %}
+                </td>
+                <td>
+                    {% if licencia %}
+                        <span style="color:{% if licencia.dias_restantes <= 5 %}#f0b429{% else %}#4caf50{% endif %}; font-weight:600;">
+                            {{ licencia.dias_restantes }} días
+                        </span>
+                    {% else %}—{% endif %}
+                </td>
+                <td>
+                    {% if licencia %}
+                        <span class="badge-{{ licencia.estado }}">{{ licencia.get_estado_display }}</span>
+                    {% else %}
+                        <span class="badge-suspendida">Sin licencia</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endwith %}
+            {% empty %}
+            <tr>
+                <td colspan="6" style="color:#444; text-align:center;">Sin sucursales registradas</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% empty %}
+<div class="sa-card" style="text-align:center; color:#444;">
+    No hay tenants registrados.
+</div>
+{% endfor %}
+{% endblock %}

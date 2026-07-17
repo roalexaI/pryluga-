@@ -1,0 +1,48 @@
+{% extends 'superadmin/base.html' %}
+
+{% block title %}Licencias — Superadmin{% endblock %}
+
+{% block content %}
+<div class="sa-page-title">Licencias</div>
+
+<div class="sa-card">
+    <table class="sa-table">
+        <thead>
+            <tr>
+                <th>Tenant</th>
+                <th>Sucursal</th>
+                <th>Activación</th>
+                <th>Vencimiento</th>
+                <th>Días restantes</th>
+                <th>Monto</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for licencia in licencias %}
+            <tr>
+                <td>{{ licencia.sucursal.tenant.nombre }}</td>
+                <td style="color:#fff;">{{ licencia.sucursal.nombre }}</td>
+                <td>{{ licencia.fecha_activacion }}</td>
+                <td>{{ licencia.fecha_vencimiento }}</td>
+                <td>
+                    {% if licencia.estado == 'activa' %}
+                        <span style="color:{% if licencia.dias_restantes <= 5 %}#f0b429{% else %}#4caf50{% endif %}; font-weight:600;">
+                            {{ licencia.dias_restantes }} días
+                        </span>
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+                <td style="color:#fff;">${{ licencia.monto }}</td>
+                <td><span class="badge-{{ licencia.estado }}">{{ licencia.get_estado_display }}</span></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="color:#444; text-align:center;">No hay licencias registradas.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
