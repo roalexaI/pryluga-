@@ -1,0 +1,60 @@
+{% extends 'superadmin/base.html' %}
+
+{% block title %}Roles — {{ tenant.nombre }}{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <a href="/superadmin/tenants/" style="color:#444; text-decoration:none;">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div class="sa-page-title" style="margin-bottom:0;">
+            Roles — <span style="color:var(--gold);">{{ tenant.nombre }}</span>
+        </div>
+    </div>
+    <a href="/superadmin/tenants/{{ tenant.id }}/roles/crear/" class="btn-sa">
+        <i class="bi bi-plus-lg"></i> Nuevo rol
+    </a>
+</div>
+
+<div class="sa-card">
+    <table class="sa-table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Opciones asignadas</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rol in roles %}
+            <tr>
+                <td style="color:#fff; font-weight:600;">{{ rol.nombre }}</td>
+                <td>{{ rol.descripcion|default:"—" }}</td>
+                <td>
+                    {% for permiso in rol.permisos.all %}
+                        <span style="background:#1e1e1e; color:#aaa; padding:2px 8px; border-radius:4px; font-size:0.75rem; margin-right:4px;">
+                            {{ permiso.opcion.nombre }}
+                        </span>
+                    {% empty %}
+                        <span style="color:#444;">Sin permisos</span>
+                    {% endfor %}
+                </td>
+                <td>
+                    <span class="{% if rol.activo %}badge-activa{% else %}badge-suspendida{% endif %}">
+                        {% if rol.activo %}Activo{% else %}Inactivo{% endif %}
+                    </span>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" style="color:#444; text-align:center;">
+                    No hay roles creados para este tenant.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

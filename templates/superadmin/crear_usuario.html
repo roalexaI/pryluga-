@@ -1,0 +1,107 @@
+{% extends 'superadmin/base.html' %}
+
+{% block title %}Crear Usuario — Superadmin{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a href="/superadmin/tenants/" style="color:#444; text-decoration:none;">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <div class="sa-page-title" style="margin-bottom:0;">
+        Crear Usuario — <span style="color:var(--gold);">{{ tenant.nombre }}</span>
+    </div>
+</div>
+
+<form method="post" id="formCrearUsuario">
+    {% csrf_token %}
+    <div class="row g-4">
+
+        <div class="col-md-6">
+            <div class="sa-card">
+                <div class="sa-card-header">Datos personales</div>
+                <div class="mb-3">
+                    <label style="color:#aaa; font-size:0.82rem;">Nombre</label>
+                    <input type="text" name="nombre"
+                           class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;"
+                           placeholder="ej. Gabriela" required>
+                </div>
+                <div class="mb-3">
+                    <label style="color:#aaa; font-size:0.82rem;">Apellido</label>
+                    <input type="text" name="apellido"
+                           class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;"
+                           placeholder="ej. Luga" required>
+                </div>
+                <div class="mb-3">
+                    <label style="color:#aaa; font-size:0.82rem;">Teléfono</label>
+                    <input type="text" name="telefono"
+                           class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;"
+                           placeholder="0999999999">
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="sa-card">
+                <div class="sa-card-header">Acceso y rol</div>
+                <div class="mb-3">
+                    <label style="color:#aaa; font-size:0.82rem;">Correo electrónico</label>
+                    <input type="email" name="email"
+                           class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;"
+                           placeholder="correo@ejemplo.com" required>
+                </div>
+                <div class="mb-3">
+                    <label style="color:#aaa; font-size:0.82rem;">Contraseña</label>
+                    <input type="password" name="password"
+                           class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;"
+                           placeholder="••••••••" required>
+                </div>
+                <div class="mb-3">
+                    <label style="color:#aaa; font-size:0.82rem;">Rol</label>
+                    <select name="rol"
+                            class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;">
+                        <option value="">— Sin rol asignado —</option>
+                        {% for rol in roles %}
+                        <option value="{{ rol.id }}">{{ rol.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label style="color:#aaa; font-size:0.82rem;">Sucursal</label>
+                    <select name="sucursal"
+                            class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;">
+                        <option value="">— Sin sucursal asignada —</option>
+                        {% for sucursal in sucursales %}
+                        <option value="{{ sucursal.id }}">{{ sucursal.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="d-flex justify-content-end gap-3 mt-4">
+        <a href="/superadmin/tenants/" class="btn-sa-danger">Cancelar</a>
+        <button type="button" class="btn-sa" id="btnConfirmarUsuario">
+            <i class="bi bi-person-plus"></i> Crear usuario
+        </button>
+    </div>
+</form>
+
+<!-- MODAL CONFIRMAR -->
+<div class="modal fade" id="modalConfirmarUsuario" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content" style="background:#141414; border:1px solid #2a2a2a;">
+            <div class="modal-body text-center" style="padding:32px 24px;">
+                <i class="bi bi-person-check" style="font-size:2.5rem; color:var(--gold);"></i>
+                <div style="color:#fff; font-weight:600; margin:12px 0 6px;">¿Crear este usuario?</div>
+                <div style="color:#666; font-size:0.82rem;" id="confirmUsuarioNombre"></div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid #1e1e1e; justify-content:center; gap:12px;">
+                <button type="button" class="btn-sa-danger" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn-sa" id="btnSubmitUsuario">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,15 +1,38 @@
-// Auto-cerrar alertas después de 4 segundos
+// ============================================================
+// MENSAJES DJANGO → SWEETALERT2 TOAST
+// ============================================================
 document.addEventListener('DOMContentLoaded', function () {
-    const alerts = document.querySelectorAll('.alert');
-    alerts.forEach(function (alert) {
-        setTimeout(function () {
-            const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
-            bsAlert.close();
-        }, 4000);
+    const messages = document.querySelectorAll('[data-message]');
+    messages.forEach(function (el) {
+        const type = el.getAttribute('data-type');
+        const text = el.getAttribute('data-message');
+
+        const iconMap = {
+            'success': 'success',
+            'error': 'error',
+            'warning': 'warning',
+            'info': 'info',
+            'debug': 'info',
+        };
+
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: iconMap[type] || 'info',
+            title: text,
+            showConfirmButton: false,
+            timer: 4000,
+            timerProgressBar: true,
+            background: '#1a1a1a',
+            color: '#fff',
+            iconColor: type === 'success' ? '#8B6914' : type === 'warning' ? '#f0b429' : '#e74c3c',
+        });
     });
 });
 
-// Marcar enlace activo en topbar
+// ============================================================
+// MARCAR ENLACE ACTIVO EN TOPBAR
+// ============================================================
 document.addEventListener('DOMContentLoaded', function () {
     const currentPath = window.location.pathname;
     const navLinks = document.querySelectorAll('.topbar-nav a, .mobile-menu a');
@@ -20,7 +43,9 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// Toggle menú móvil
+// ============================================================
+// TOGGLE MENÚ MÓVIL
+// ============================================================
 document.addEventListener('DOMContentLoaded', function () {
     const toggle = document.getElementById('mobileToggle');
     const menu = document.getElementById('mobileMenu');

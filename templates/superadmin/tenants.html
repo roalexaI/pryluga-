@@ -3,7 +3,12 @@
 {% block title %}Tenants — Superadmin{% endblock %}
 
 {% block content %}
-<div class="sa-page-title">Tenants</div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="sa-page-title" style="margin-bottom:0;">Tenants</div>
+    <button class="btn-sa" data-bs-toggle="modal" data-bs-target="#modalCrearTenant">
+        <i class="bi bi-plus-lg"></i> Nuevo tenant
+    </button>
+</div>
 
 {% for tenant in tenants %}
 <div class="sa-card mb-4">
@@ -12,9 +17,30 @@
             <div style="color:#fff; font-weight:700; font-size:1rem;">{{ tenant.nombre }}</div>
             <div style="color:#444; font-size:0.75rem;">{{ tenant.slug }}</div>
         </div>
-        <span class="{% if tenant.activo %}badge-activa{% else %}badge-vencida{% endif %}">
-            {% if tenant.activo %}Activo{% else %}Inactivo{% endif %}
-        </span>
+        <div class="d-flex gap-2 align-items-center">
+            <span class="{% if tenant.activo %}badge-activa{% else %}badge-vencida{% endif %}">
+                {% if tenant.activo %}Activo{% else %}Inactivo{% endif %}
+            </span>
+            <button class="btn-sa" data-bs-toggle="modal"
+                    data-bs-target="#modalCrearSucursal"
+                    data-tenant-id="{{ tenant.id }}"
+                    data-tenant-nombre="{{ tenant.nombre }}">
+                <i class="bi bi-geo-alt"></i> Nueva sucursal
+            </button>
+            <a href="/superadmin/tenants/{{ tenant.id }}/roles/" class="btn-sa">
+                <i class="bi bi-shield"></i> Roles
+            </a>
+            <a href="/superadmin/tenants/{{ tenant.id }}/usuario/crear/" class="btn-sa">
+                <i class="bi bi-person-plus"></i> Usuario
+            </a>
+            <button class="btn-sa" data-bs-toggle="modal"
+                    data-bs-target="#modalCrearLicencia"
+                    data-tenant-id="{{ tenant.id }}"
+                    data-tenant-nombre="{{ tenant.nombre }}"
+                    data-sucursales='[{% for s in tenant.sucursales.all %}{"id":{{ s.id }},"nombre":"{{ s.nombre }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'>
+                <i class="bi bi-shield-check"></i> Licencia
+            </button>
+        </div>
     </div>
 
     <table class="sa-table">
@@ -41,17 +67,10 @@
                     {% endif %}
                 </td>
                 <td>
-                    {% if licencia %}
-                        ${{ licencia.monto }}/mes
-                    {% else %}
-                        <span style="color:#444;">Sin licencia</span>
-                    {% endif %}
+                    {% if licencia %}${{ licencia.monto }}/mes
+                    {% else %}<span style="color:#444;">Sin licencia</span>{% endif %}
                 </td>
-                <td>
-                    {% if licencia %}
-                        {{ licencia.fecha_vencimiento }}
-                    {% else %}—{% endif %}
-                </td>
+                <td>{% if licencia %}{{ licencia.fecha_vencimiento }}{% else %}—{% endif %}</td>
                 <td>
                     {% if licencia %}
                         <span style="color:{% if licencia.dias_restantes <= 5 %}#f0b429{% else %}#4caf50{% endif %}; font-weight:600;">
@@ -70,7 +89,7 @@
             {% endwith %}
             {% empty %}
             <tr>
-                <td colspan="6" style="color:#444; text-align:center;">Sin sucursales registradas</td>
+                <td colspan="6" style="color:#444; text-align:center;">Sin sucursales</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -81,4 +100,188 @@
     No hay tenants registrados.
 </div>
 {% endfor %}
+
+
+<!-- MODAL CREAR TENANT -->
+<div class="modal fade" id="modalCrearTenant" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background:#141414; border:1px solid #2a2a2a;">
+            <div class="modal-header" style="border-bottom:1px solid #1e1e1e;">
+                <h5 class="modal-title" style="color:#fff; font-size:0.95rem;">
+                    <i class="bi bi-buildings" style="color:var(--gold);"></i> Nuevo Tenant
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/superadmin/tenants/crear/" id="formCrearTenant">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label style="color:#aaa; font-size:0.82rem;">Nombre</label>
+                        <input type="text" name="nombre" id="tenantNombre"
+                               class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;"
+                               placeholder="ej. Luga Studio" required>
+                    </div>
+                    <div class="mb-3">
+                        <label style="color:#aaa; font-size:0.82rem;">Slug</label>
+                        <input type="text" name="slug" id="tenantSlug"
+                               class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;"
+                               placeholder="ej. luga-studio" required>
+                        <small style="color:#444; font-size:0.75rem;">Solo letras, números y guiones</small>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid #1e1e1e;">
+                    <button type="button" class="btn-sa-danger" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-sa" id="btnConfirmarTenant">Crear tenant</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CONFIRMAR CREAR TENANT -->
+<div class="modal fade" id="modalConfirmarTenant" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content" style="background:#141414; border:1px solid #2a2a2a;">
+            <div class="modal-body text-center" style="padding:32px 24px;">
+                <i class="bi bi-buildings" style="font-size:2.5rem; color:var(--gold);"></i>
+                <div style="color:#fff; font-weight:600; margin:12px 0 6px;">¿Crear este tenant?</div>
+                <div style="color:#666; font-size:0.82rem;" id="confirmTenantNombre"></div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid #1e1e1e; justify-content:center; gap:12px;">
+                <button type="button" class="btn-sa-danger" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn-sa" id="btnSubmitTenant">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- MODAL CREAR SUCURSAL -->
+<div class="modal fade" id="modalCrearSucursal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background:#141414; border:1px solid #2a2a2a;">
+            <div class="modal-header" style="border-bottom:1px solid #1e1e1e;">
+                <h5 class="modal-title" style="color:#fff; font-size:0.95rem;">
+                    <i class="bi bi-geo-alt" style="color:var(--gold);"></i> Nueva Sucursal
+                    — <span id="sucursalTenantNombre" style="color:var(--gold);"></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="" id="formCrearSucursal">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label style="color:#aaa; font-size:0.82rem;">Nombre</label>
+                        <input type="text" name="nombre"
+                               class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;"
+                               placeholder="ej. Sede Principal" required>
+                    </div>
+                    <div class="mb-3">
+                        <label style="color:#aaa; font-size:0.82rem;">Dirección</label>
+                        <input type="text" name="direccion"
+                               class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;"
+                               placeholder="Dirección completa" required>
+                    </div>
+                    <div class="mb-3">
+                        <label style="color:#aaa; font-size:0.82rem;">Teléfono</label>
+                        <input type="text" name="telefono"
+                               class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;"
+                               placeholder="0999999999">
+                    </div>
+                    <div class="mb-3">
+                        <label style="color:#aaa; font-size:0.82rem;">Email</label>
+                        <input type="email" name="email"
+                               class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;"
+                               placeholder="correo@ejemplo.com">
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="es_principal" id="esPrincipal"
+                               class="form-check-input">
+                        <label for="esPrincipal" style="color:#aaa; font-size:0.82rem;">Es sede principal</label>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid #1e1e1e;">
+                    <button type="button" class="btn-sa-danger" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-sa" id="btnConfirmarSucursal">Crear sucursal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CONFIRMAR SUCURSAL -->
+<div class="modal fade" id="modalConfirmarSucursal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content" style="background:#141414; border:1px solid #2a2a2a;">
+            <div class="modal-body text-center" style="padding:32px 24px;">
+                <i class="bi bi-geo-alt" style="font-size:2.5rem; color:var(--gold);"></i>
+                <div style="color:#fff; font-weight:600; margin:12px 0 6px;">¿Crear esta sucursal?</div>
+                <div style="color:#666; font-size:0.82rem;" id="confirmSucursalNombre"></div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid #1e1e1e; justify-content:center; gap:12px;">
+                <button type="button" class="btn-sa-danger" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn-sa" id="btnSubmitSucursal">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- MODAL CREAR LICENCIA -->
+<div class="modal fade" id="modalCrearLicencia" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background:#141414; border:1px solid #2a2a2a;">
+            <div class="modal-header" style="border-bottom:1px solid #1e1e1e;">
+                <h5 class="modal-title" style="color:#fff; font-size:0.95rem;">
+                    <i class="bi bi-shield-check" style="color:var(--gold);"></i> Nueva Licencia
+                    — <span id="licenciaTenantNombre" style="color:var(--gold);"></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="" id="formCrearLicencia">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label style="color:#aaa; font-size:0.82rem;">Sucursal</label>
+                        <select name="sucursal" id="licenciaSucursal"
+                                class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;" required>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label style="color:#aaa; font-size:0.82rem;">Fecha de activación</label>
+                        <input type="date" name="fecha_activacion" id="licenciaFecha"
+                               class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;" required>
+                    </div>
+                    <div class="mb-3">
+                        <label style="color:#aaa; font-size:0.82rem;">Monto mensual ($)</label>
+                        <input type="number" name="monto" value="80"
+                               class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;" required>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid #1e1e1e;">
+                    <button type="button" class="btn-sa-danger" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-sa" id="btnConfirmarLicencia">Crear licencia</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CONFIRMAR LICENCIA -->
+<div class="modal fade" id="modalConfirmarLicencia" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content" style="background:#141414; border:1px solid #2a2a2a;">
+            <div class="modal-body text-center" style="padding:32px 24px;">
+                <i class="bi bi-shield-check" style="font-size:2.5rem; color:var(--gold);"></i>
+                <div style="color:#fff; font-weight:600; margin:12px 0 6px;">¿Activar esta licencia?</div>
+                <div style="color:#666; font-size:0.82rem;" id="confirmLicenciaDetalle"></div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid #1e1e1e; justify-content:center; gap:12px;">
+                <button type="button" class="btn-sa-danger" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn-sa" id="btnSubmitLicencia">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
