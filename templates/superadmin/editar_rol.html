@@ -1,0 +1,118 @@
+{% extends 'superadmin/base.html' %}
+
+{% block title %}Editar Rol — Superadmin{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a href="/superadmin/tenants/" style="color:#444; text-decoration:none;">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <div class="sa-page-title" style="margin-bottom:0;">
+        Editar Rol — <span style="color:var(--gold);">{{ rol.nombre }}</span>
+    </div>
+</div>
+
+<form method="post" id="formEditarRol">
+    {% csrf_token %}
+    <div class="row g-4">
+
+        <div class="col-md-4">
+            <div class="sa-card">
+                <div class="sa-card-header">Datos del rol</div>
+                <div class="mb-3">
+                    <label style="color:#aaa; font-size:0.82rem;">Nombre del rol</label>
+                    <input type="text" name="nombre" value="{{ rol.nombre }}"
+                           class="form-control sa-input" required>
+                </div>
+                <div class="mb-3">
+                    <label style="color:#aaa; font-size:0.82rem;">Descripción</label>
+                    <textarea name="descripcion" rows="3"
+                              class="form-control sa-input">{{ rol.descripcion }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="sa-card">
+                <div class="sa-card-header mb-3">Permisos por opción</div>
+                <table class="sa-table">
+                    <thead>
+                        <tr>
+                            <th>Opción</th>
+                            <th class="text-center">Ver</th>
+                            <th class="text-center">Crear</th>
+                            <th class="text-center">Editar</th>
+                            <th class="text-center">Eliminar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for opcion in opciones %}
+                        {% with permiso=rol.permisos.all %}
+                        <tr>
+                            <td style="color:#fff;">
+                                <i class="bi {{ opcion.icono }}" style="color:var(--gold);"></i>
+                                {{ opcion.nombre }}
+                            </td>
+                            <td class="text-center">
+                                <input type="checkbox" name="ver_{{ opcion.id }}"
+                                       class="form-check-input check-ver"
+                                       data-opcion="{{ opcion.id }}"
+                                       style="accent-color:var(--gold);"
+                                       {% for p in permiso %}{% if p.opcion.id == opcion.id and p.puede_ver %}checked{% endif %}{% endfor %}>
+                            </td>
+                            <td class="text-center">
+                                <input type="checkbox" name="crear_{{ opcion.id }}"
+                                       class="form-check-input check-accion"
+                                       data-opcion="{{ opcion.id }}"
+                                       style="accent-color:var(--gold);"
+                                       {% for p in permiso %}{% if p.opcion.id == opcion.id and p.puede_crear %}checked{% endif %}{% endfor %}>
+                            </td>
+                            <td class="text-center">
+                                <input type="checkbox" name="editar_{{ opcion.id }}"
+                                       class="form-check-input check-accion"
+                                       data-opcion="{{ opcion.id }}"
+                                       style="accent-color:var(--gold);"
+                                       {% for p in permiso %}{% if p.opcion.id == opcion.id and p.puede_editar %}checked{% endif %}{% endfor %}>
+                            </td>
+                            <td class="text-center">
+                                <input type="checkbox" name="eliminar_{{ opcion.id }}"
+                                       class="form-check-input check-accion"
+                                       data-opcion="{{ opcion.id }}"
+                                       style="accent-color:var(--gold);"
+                                       {% for p in permiso %}{% if p.opcion.id == opcion.id and p.puede_eliminar %}checked{% endif %}{% endfor %}>
+                            </td>
+                        </tr>
+                        {% endwith %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="d-flex justify-content-end gap-3 mt-4">
+        <a href="/superadmin/tenants/" class="btn-sa-danger">Cancelar</a>
+        <button type="button" class="btn-sa" id="btnConfirmarRol">
+            <i class="bi bi-shield-check"></i> Guardar cambios
+        </button>
+    </div>
+</form>
+
+<!-- MODAL CONFIRMAR -->
+<div class="modal fade" id="modalConfirmarRol" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content" style="background:#141414; border:1px solid #2a2a2a;">
+            <div class="modal-body text-center" style="padding:32px 24px;">
+                <i class="bi bi-shield" style="font-size:2.5rem; color:var(--gold);"></i>
+                <div style="color:#fff; font-weight:600; margin:12px 0 6px;">¿Guardar los cambios?</div>
+                <div style="color:#666; font-size:0.82rem;" id="confirmRolNombre"></div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid #1e1e1e; justify-content:center; gap:12px;">
+                <button type="button" class="btn-sa-danger" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn-sa" id="btnSubmitRol">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

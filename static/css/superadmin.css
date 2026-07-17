@@ -188,3 +188,85 @@ body {
     background-color: #3e1a1a;
     color: #e74c3c;
 }
+
+
+/* TREE TABLE */
+.tree-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.tree-row:hover {
+    background-color: #1a1a1a;
+}
+
+.tree-tenant {
+    padding: 12px;
+}
+
+.tree-sucursal {
+    margin-left: 24px;
+    border-left: 1px solid #2a2a2a;
+    padding-left: 16px;
+    border-radius: 0;
+}
+
+.tree-section {
+    margin-left: 48px;
+    cursor: default;
+    padding: 6px 12px;
+}
+
+.tree-section:hover {
+    background: none;
+}
+
+.tree-item {
+    margin-left: 64px;
+    border-left: 1px solid #1e1e1e;
+    padding-left: 16px;
+    border-radius: 0;
+    cursor: default;
+}
+
+.tree-item:hover {
+    background-color: #161616;
+}
+
+.tree-children {
+    margin-top: 4px;
+}
+
+.tree-chevron {
+    font-size: 0.75rem;
+    color: #444;
+    transition: transform 0.2s;
+}
+
+.tree-chevron.open {
+    transform: rotate(90deg);
+    color: var(--gold);
+}
+
+.btn-sm-sa {
+    padding: 4px 10px;
+    font-size: 0.78rem;
+}
+
+.sa-input {
+    background-color: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    color: #fff;
+}
+
+.sa-input:focus {
+    background-color: #1a1a1a;
+    border-color: var(--gold);
+    color: #fff;
+    box-shadow: 0 0 0 2px rgba(139,105,20,0.2);
+}

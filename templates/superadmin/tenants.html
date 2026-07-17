@@ -12,88 +12,147 @@
 
 {% for tenant in tenants %}
 <div class="sa-card mb-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <div style="color:#fff; font-weight:700; font-size:1rem;">{{ tenant.nombre }}</div>
-            <div style="color:#444; font-size:0.75rem;">{{ tenant.slug }}</div>
-        </div>
-        <div class="d-flex gap-2 align-items-center">
-            <span class="{% if tenant.activo %}badge-activa{% else %}badge-vencida{% endif %}">
+
+    <!-- TENANT ROW -->
+    <div class="tree-row tree-tenant" onclick="toggleTree('tenant-{{ tenant.id }}')">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-chevron-right tree-chevron" id="chevron-tenant-{{ tenant.id }}"></i>
+            <i class="bi bi-buildings" style="color:var(--gold);"></i>
+            <span style="color:#fff; font-weight:700;">{{ tenant.nombre }}</span>
+            <span style="color:#444; font-size:0.75rem;">{{ tenant.slug }}</span>
+            <span class="{% if tenant.activo %}badge-activa{% else %}badge-vencida{% endif %}" style="margin-left:8px;">
                 {% if tenant.activo %}Activo{% else %}Inactivo{% endif %}
             </span>
-            <button class="btn-sa" data-bs-toggle="modal"
+        </div>
+        <div class="d-flex gap-2" onclick="event.stopPropagation()">
+            <button class="btn-sa btn-sm-sa" data-bs-toggle="modal"
                     data-bs-target="#modalCrearSucursal"
                     data-tenant-id="{{ tenant.id }}"
                     data-tenant-nombre="{{ tenant.nombre }}">
-                <i class="bi bi-geo-alt"></i> Nueva sucursal
+                <i class="bi bi-geo-alt"></i> Sucursal
             </button>
-            <a href="/superadmin/tenants/{{ tenant.id }}/roles/" class="btn-sa">
-                <i class="bi bi-shield"></i> Roles
-            </a>
-            <a href="/superadmin/tenants/{{ tenant.id }}/usuario/crear/" class="btn-sa">
-                <i class="bi bi-person-plus"></i> Usuario
-            </a>
-            <button class="btn-sa" data-bs-toggle="modal"
+            <button class="btn-sa btn-sm-sa" data-bs-toggle="modal"
                     data-bs-target="#modalCrearLicencia"
                     data-tenant-id="{{ tenant.id }}"
                     data-tenant-nombre="{{ tenant.nombre }}"
                     data-sucursales='[{% for s in tenant.sucursales.all %}{"id":{{ s.id }},"nombre":"{{ s.nombre }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'>
                 <i class="bi bi-shield-check"></i> Licencia
             </button>
+            <a href="/superadmin/tenants/{{ tenant.id }}/roles/crear/" class="btn-sa btn-sm-sa">
+                <i class="bi bi-shield"></i> Rol
+            </a>
+            <button class="btn-sa btn-sm-sa" data-bs-toggle="modal"
+                    data-bs-target="#modalCrearUsuario"
+                    data-tenant-id="{{ tenant.id }}"
+                    data-tenant-nombre="{{ tenant.nombre }}"
+                    data-roles='[{% for r in tenant.roles.all %}{"id":{{ r.id }},"nombre":"{{ r.nombre }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'
+                    data-sucursales='[{% for s in tenant.sucursales.all %}{"id":{{ s.id }},"nombre":"{{ s.nombre }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'>
+                <i class="bi bi-person-plus"></i> Usuario
+            </button>
         </div>
     </div>
 
-    <table class="sa-table">
-        <thead>
-            <tr>
-                <th>Sucursal</th>
-                <th>Principal</th>
-                <th>Licencia</th>
-                <th>Vencimiento</th>
-                <th>Días restantes</th>
-                <th>Estado</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for sucursal in tenant.sucursales.all %}
-            {% with licencia=sucursal.licencia_activa %}
-            <tr>
-                <td style="color:#fff;">{{ sucursal.nombre }}</td>
-                <td>
-                    {% if sucursal.es_principal %}
-                        <span style="color:var(--gold); font-size:0.75rem;">
-                            <i class="bi bi-star-fill"></i> Principal
-                        </span>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if licencia %}${{ licencia.monto }}/mes
-                    {% else %}<span style="color:#444;">Sin licencia</span>{% endif %}
-                </td>
-                <td>{% if licencia %}{{ licencia.fecha_vencimiento }}{% else %}—{% endif %}</td>
-                <td>
-                    {% if licencia %}
-                        <span style="color:{% if licencia.dias_restantes <= 5 %}#f0b429{% else %}#4caf50{% endif %}; font-weight:600;">
-                            {{ licencia.dias_restantes }} días
-                        </span>
-                    {% else %}—{% endif %}
-                </td>
-                <td>
-                    {% if licencia %}
-                        <span class="badge-{{ licencia.estado }}">{{ licencia.get_estado_display }}</span>
-                    {% else %}
-                        <span class="badge-suspendida">Sin licencia</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endwith %}
+    <!-- SUCURSALES -->
+    <div class="tree-children" id="tenant-{{ tenant.id }}" style="display:none;">
+        {% for sucursal in tenant.sucursales.all %}
+        <div class="tree-row tree-sucursal" onclick="toggleTree('sucursal-{{ sucursal.id }}')">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-chevron-right tree-chevron" id="chevron-sucursal-{{ sucursal.id }}"></i>
+                <i class="bi bi-geo-alt" style="color:var(--gold);"></i>
+                <span style="color:#ddd;">{{ sucursal.nombre }}</span>
+                {% if sucursal.es_principal %}
+                    <span style="color:var(--gold); font-size:0.72rem;"><i class="bi bi-star-fill"></i> Principal</span>
+                {% endif %}
+                {% with licencia=sucursal.licencia_activa %}
+                {% if licencia %}
+                    <span class="badge-activa">Activa</span>
+                    <span style="color:#555; font-size:0.75rem;">vence {{ licencia.fecha_vencimiento }} — {{ licencia.dias_restantes }} días</span>
+                {% else %}
+                    <span class="badge-suspendida">Sin licencia</span>
+                {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+
+        <!-- ROLES Y USUARIOS -->
+        <div class="tree-children" id="sucursal-{{ sucursal.id }}" style="display:none;">
+
+            <!-- ROLES -->
+            <div class="tree-row tree-section">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-shield" style="color:var(--gold);"></i>
+                    <span style="color:#888; font-size:0.82rem; text-transform:uppercase; letter-spacing:1px;">Roles</span>
+                </div>
+            </div>
+            {% for rol in tenant.roles.all %}
+            <div class="tree-row tree-item">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-dot" style="color:var(--gold);"></i>
+                    <span style="color:#ccc;">{{ rol.nombre }}</span>
+                    <span style="color:#444; font-size:0.75rem;">
+                        {% for permiso in rol.permisos.all %}
+                            {{ permiso.opcion.nombre }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </span>
+                </div>
+                <a href="/superadmin/tenants/{{ tenant.id }}/roles/{{ rol.id }}/editar/"
+                   class="btn-sa btn-sm-sa">
+                    <i class="bi bi-pencil"></i>
+                </a>
+            </div>
             {% empty %}
-            <tr>
-                <td colspan="6" style="color:#444; text-align:center;">Sin sucursales</td>
-            </tr>
+            <div class="tree-row tree-item">
+                <span style="color:#444; font-size:0.82rem;">Sin roles creados</span>
+            </div>
             {% endfor %}
-        </tbody>
-    </table>
+
+            <!-- USUARIOS -->
+            <div class="tree-row tree-section">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-people" style="color:var(--gold);"></i>
+                    <span style="color:#888; font-size:0.82rem; text-transform:uppercase; letter-spacing:1px;">Usuarios</span>
+                </div>
+            </div>
+            {% for usuario in tenant.usuarios.all %}
+            <div class="tree-row tree-item">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-dot" style="color:var(--gold);"></i>
+                    <span style="color:#ccc;">{{ usuario.nombre_completo }}</span>
+                    <span style="color:#555; font-size:0.75rem;">{{ usuario.email }}</span>
+                    <span style="color:#555; font-size:0.75rem;">{{ usuario.rol.nombre|default:"Sin rol" }}</span>
+                    <span class="{% if usuario.activo %}badge-activa{% else %}badge-suspendida{% endif %}">
+                        {% if usuario.activo %}Activo{% else %}Inactivo{% endif %}
+                    </span>
+                </div>
+                <button class="btn-sa btn-sm-sa" data-bs-toggle="modal"
+                        data-bs-target="#modalEditarUsuario"
+                        data-usuario-id="{{ usuario.id }}"
+                        data-nombre="{{ usuario.nombre }}"
+                        data-apellido="{{ usuario.apellido }}"
+                        data-email="{{ usuario.email }}"
+                        data-telefono="{{ usuario.telefono }}"
+                        data-rol="{{ usuario.rol.id|default:'' }}"
+                        data-sucursal="{{ usuario.sucursal.id|default:'' }}"
+                        data-activo="{{ usuario.activo|yesno:'true,false' }}"
+                        data-roles='[{% for r in tenant.roles.all %}{"id":{{ r.id }},"nombre":"{{ r.nombre }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'
+                        data-sucursales='[{% for s in tenant.sucursales.all %}{"id":{{ s.id }},"nombre":"{{ s.nombre }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'>
+                    <i class="bi bi-pencil"></i>
+                </button>
+            </div>
+            {% empty %}
+            <div class="tree-row tree-item">
+                <span style="color:#444; font-size:0.82rem;">Sin usuarios creados</span>
+            </div>
+            {% endfor %}
+
+        </div>
+        {% empty %}
+        <div class="tree-row tree-item">
+            <span style="color:#444; font-size:0.82rem;">Sin sucursales registradas</span>
+        </div>
+        {% endfor %}
+    </div>
+
 </div>
 {% empty %}
 <div class="sa-card" style="text-align:center; color:#444;">
@@ -118,14 +177,12 @@
                     <div class="mb-3">
                         <label style="color:#aaa; font-size:0.82rem;">Nombre</label>
                         <input type="text" name="nombre" id="tenantNombre"
-                               class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;"
-                               placeholder="ej. Luga Studio" required>
+                               class="form-control sa-input" placeholder="ej. Luga Studio" required>
                     </div>
                     <div class="mb-3">
                         <label style="color:#aaa; font-size:0.82rem;">Slug</label>
                         <input type="text" name="slug" id="tenantSlug"
-                               class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;"
-                               placeholder="ej. luga-studio" required>
+                               class="form-control sa-input" placeholder="ej. luga-studio" required>
                         <small style="color:#444; font-size:0.75rem;">Solo letras, números y guiones</small>
                     </div>
                 </div>
@@ -155,7 +212,6 @@
     </div>
 </div>
 
-
 <!-- MODAL CREAR SUCURSAL -->
 <div class="modal fade" id="modalCrearSucursal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -172,31 +228,26 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label style="color:#aaa; font-size:0.82rem;">Nombre</label>
-                        <input type="text" name="nombre"
-                               class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;"
+                        <input type="text" name="nombre" class="form-control sa-input"
                                placeholder="ej. Sede Principal" required>
                     </div>
                     <div class="mb-3">
                         <label style="color:#aaa; font-size:0.82rem;">Dirección</label>
-                        <input type="text" name="direccion"
-                               class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;"
+                        <input type="text" name="direccion" class="form-control sa-input"
                                placeholder="Dirección completa" required>
                     </div>
                     <div class="mb-3">
                         <label style="color:#aaa; font-size:0.82rem;">Teléfono</label>
-                        <input type="text" name="telefono"
-                               class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;"
+                        <input type="text" name="telefono" class="form-control sa-input"
                                placeholder="0999999999">
                     </div>
                     <div class="mb-3">
                         <label style="color:#aaa; font-size:0.82rem;">Email</label>
-                        <input type="email" name="email"
-                               class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;"
+                        <input type="email" name="email" class="form-control sa-input"
                                placeholder="correo@ejemplo.com">
                     </div>
                     <div class="form-check">
-                        <input type="checkbox" name="es_principal" id="esPrincipal"
-                               class="form-check-input">
+                        <input type="checkbox" name="es_principal" id="esPrincipal" class="form-check-input">
                         <label for="esPrincipal" style="color:#aaa; font-size:0.82rem;">Es sede principal</label>
                     </div>
                 </div>
@@ -226,7 +277,6 @@
     </div>
 </div>
 
-
 <!-- MODAL CREAR LICENCIA -->
 <div class="modal fade" id="modalCrearLicencia" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -243,19 +293,16 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label style="color:#aaa; font-size:0.82rem;">Sucursal</label>
-                        <select name="sucursal" id="licenciaSucursal"
-                                class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;" required>
-                        </select>
+                        <select name="sucursal" id="licenciaSucursal" class="form-control sa-input" required></select>
                     </div>
                     <div class="mb-3">
                         <label style="color:#aaa; font-size:0.82rem;">Fecha de activación</label>
                         <input type="date" name="fecha_activacion" id="licenciaFecha"
-                               class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;" required>
+                               class="form-control sa-input" required>
                     </div>
                     <div class="mb-3">
                         <label style="color:#aaa; font-size:0.82rem;">Monto mensual ($)</label>
-                        <input type="number" name="monto" value="80"
-                               class="form-control" style="background:#1a1a1a; border:1px solid #2a2a2a; color:#fff;" required>
+                        <input type="number" name="monto" value="80" class="form-control sa-input" required>
                     </div>
                 </div>
                 <div class="modal-footer" style="border-top:1px solid #1e1e1e;">
@@ -279,6 +326,154 @@
             <div class="modal-footer" style="border-top:1px solid #1e1e1e; justify-content:center; gap:12px;">
                 <button type="button" class="btn-sa-danger" data-bs-dismiss="modal">Cancelar</button>
                 <button type="button" class="btn-sa" id="btnSubmitLicencia">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CREAR USUARIO -->
+<div class="modal fade" id="modalCrearUsuario" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background:#141414; border:1px solid #2a2a2a;">
+            <div class="modal-header" style="border-bottom:1px solid #1e1e1e;">
+                <h5 class="modal-title" style="color:#fff; font-size:0.95rem;">
+                    <i class="bi bi-person-plus" style="color:var(--gold);"></i> Nuevo Usuario
+                    — <span id="usuarioTenantNombre" style="color:var(--gold);"></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="" id="formCrearUsuario">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label style="color:#aaa; font-size:0.82rem;">Nombre</label>
+                            <input type="text" name="nombre" class="form-control sa-input" required>
+                        </div>
+                        <div class="col-6">
+                            <label style="color:#aaa; font-size:0.82rem;">Apellido</label>
+                            <input type="text" name="apellido" class="form-control sa-input" required>
+                        </div>
+                        <div class="col-12">
+                            <label style="color:#aaa; font-size:0.82rem;">Email</label>
+                            <input type="email" name="email" class="form-control sa-input" required>
+                        </div>
+                        <div class="col-6">
+                            <label style="color:#aaa; font-size:0.82rem;">Teléfono</label>
+                            <input type="text" name="telefono" class="form-control sa-input">
+                        </div>
+                        <div class="col-6">
+                            <label style="color:#aaa; font-size:0.82rem;">Contraseña</label>
+                            <input type="password" name="password" class="form-control sa-input" required>
+                        </div>
+                        <div class="col-6">
+                            <label style="color:#aaa; font-size:0.82rem;">Rol</label>
+                            <select name="rol" id="usuarioRol" class="form-control sa-input"></select>
+                        </div>
+                        <div class="col-6">
+                            <label style="color:#aaa; font-size:0.82rem;">Sucursal</label>
+                            <select name="sucursal" id="usuarioSucursal" class="form-control sa-input"></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid #1e1e1e;">
+                    <button type="button" class="btn-sa-danger" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-sa" id="btnConfirmarUsuarioModal">Crear usuario</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CONFIRMAR USUARIO -->
+<div class="modal fade" id="modalConfirmarUsuarioModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content" style="background:#141414; border:1px solid #2a2a2a;">
+            <div class="modal-body text-center" style="padding:32px 24px;">
+                <i class="bi bi-person-check" style="font-size:2.5rem; color:var(--gold);"></i>
+                <div style="color:#fff; font-weight:600; margin:12px 0 6px;">¿Crear este usuario?</div>
+                <div style="color:#666; font-size:0.82rem;" id="confirmUsuarioModalNombre"></div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid #1e1e1e; justify-content:center; gap:12px;">
+                <button type="button" class="btn-sa-danger" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn-sa" id="btnSubmitUsuarioModal">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL EDITAR USUARIO -->
+<div class="modal fade" id="modalEditarUsuario" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background:#141414; border:1px solid #2a2a2a;">
+            <div class="modal-header" style="border-bottom:1px solid #1e1e1e;">
+                <h5 class="modal-title" style="color:#fff; font-size:0.95rem;">
+                    <i class="bi bi-pencil" style="color:var(--gold);"></i> Editar Usuario
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="" id="formEditarUsuario">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label style="color:#aaa; font-size:0.82rem;">Nombre</label>
+                            <input type="text" name="nombre" id="editNombre" class="form-control sa-input" required>
+                        </div>
+                        <div class="col-6">
+                            <label style="color:#aaa; font-size:0.82rem;">Apellido</label>
+                            <input type="text" name="apellido" id="editApellido" class="form-control sa-input" required>
+                        </div>
+                        <div class="col-12">
+                            <label style="color:#aaa; font-size:0.82rem;">Email</label>
+                            <input type="email" name="email" id="editEmail" class="form-control sa-input" required>
+                        </div>
+                        <div class="col-6">
+                            <label style="color:#aaa; font-size:0.82rem;">Teléfono</label>
+                            <input type="text" name="telefono" id="editTelefono" class="form-control sa-input">
+                        </div>
+                        <div class="col-6">
+                            <label style="color:#aaa; font-size:0.82rem;">Nueva contraseña</label>
+                            <input type="password" name="password" class="form-control sa-input"
+                                   placeholder="Dejar en blanco para no cambiar">
+                        </div>
+                        <div class="col-6">
+                            <label style="color:#aaa; font-size:0.82rem;">Rol</label>
+                            <select name="rol" id="editRol" class="form-control sa-input"></select>
+                        </div>
+                        <div class="col-6">
+                            <label style="color:#aaa; font-size:0.82rem;">Sucursal</label>
+                            <select name="sucursal" id="editSucursal" class="form-control sa-input"></select>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input type="checkbox" name="activo" id="editActivo" class="form-check-input">
+                                <label for="editActivo" style="color:#aaa; font-size:0.82rem;">Usuario activo</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid #1e1e1e;">
+                    <button type="button" class="btn-sa-danger" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-sa" id="btnConfirmarEditarUsuario">Guardar cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CONFIRMAR EDITAR USUARIO -->
+<div class="modal fade" id="modalConfirmarEditarUsuario" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content" style="background:#141414; border:1px solid #2a2a2a;">
+            <div class="modal-body text-center" style="padding:32px 24px;">
+                <i class="bi bi-pencil-square" style="font-size:2.5rem; color:var(--gold);"></i>
+                <div style="color:#fff; font-weight:600; margin:12px 0 6px;">¿Guardar los cambios?</div>
+                <div style="color:#666; font-size:0.82rem;" id="confirmEditarUsuarioNombre"></div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid #1e1e1e; justify-content:center; gap:12px;">
+                <button type="button" class="btn-sa-danger" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn-sa" id="btnSubmitEditarUsuario">Confirmar</button>
             </div>
         </div>
     </div>

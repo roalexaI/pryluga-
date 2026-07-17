@@ -213,3 +213,108 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('formCrearUsuario').submit();
     });
 });
+
+
+// ============================================================
+// TREE TABLE TOGGLE
+// ============================================================
+function toggleTree(id) {
+    const el = document.getElementById(id);
+    const chevron = document.getElementById('chevron-' + id);
+    if (!el) return;
+    const isOpen = el.style.display !== 'none';
+    el.style.display = isOpen ? 'none' : 'block';
+    if (chevron) chevron.classList.toggle('open', !isOpen);
+}
+
+// ============================================================
+// MODAL CREAR USUARIO (desde tenants tree)
+// ============================================================
+document.addEventListener('DOMContentLoaded', function () {
+    const modalCrearUsuario = document.getElementById('modalCrearUsuario');
+    if (!modalCrearUsuario) return;
+
+    modalCrearUsuario.addEventListener('show.bs.modal', function (e) {
+        const btn = e.relatedTarget;
+        const tenantId = btn.getAttribute('data-tenant-id');
+        const tenantNombre = btn.getAttribute('data-tenant-nombre');
+        const roles = JSON.parse(btn.getAttribute('data-roles') || '[]');
+        const sucursales = JSON.parse(btn.getAttribute('data-sucursales') || '[]');
+
+        document.getElementById('usuarioTenantNombre').textContent = tenantNombre;
+        document.getElementById('formCrearUsuario').action = `/superadmin/tenants/${tenantId}/usuario/crear/`;
+
+        const rolSelect = document.getElementById('usuarioRol');
+        rolSelect.innerHTML = '<option value="">— Sin rol —</option>';
+        roles.forEach(function (r) {
+            rolSelect.innerHTML += `<option value="${r.id}">${r.nombre}</option>`;
+        });
+
+        const sucSelect = document.getElementById('usuarioSucursal');
+        sucSelect.innerHTML = '<option value="">— Sin sucursal —</option>';
+        sucursales.forEach(function (s) {
+            sucSelect.innerHTML += `<option value="${s.id}">${s.nombre}</option>`;
+        });
+    });
+
+    document.getElementById('btnConfirmarUsuarioModal').addEventListener('click', function () {
+        const nombre = document.querySelector('#formCrearUsuario input[name="nombre"]').value.trim();
+        const apellido = document.querySelector('#formCrearUsuario input[name="apellido"]').value.trim();
+        if (!nombre || !apellido) return;
+        document.getElementById('confirmUsuarioModalNombre').textContent = `${nombre} ${apellido}`;
+        bootstrap.Modal.getInstance(modalCrearUsuario).hide();
+        new bootstrap.Modal(document.getElementById('modalConfirmarUsuarioModal')).show();
+    });
+
+    document.getElementById('btnSubmitUsuarioModal').addEventListener('click', function () {
+        document.getElementById('formCrearUsuario').submit();
+    });
+});
+
+// ============================================================
+// MODAL EDITAR USUARIO
+// ============================================================
+document.addEventListener('DOMContentLoaded', function () {
+    const modalEditarUsuario = document.getElementById('modalEditarUsuario');
+    if (!modalEditarUsuario) return;
+
+    modalEditarUsuario.addEventListener('show.bs.modal', function (e) {
+        const btn = e.relatedTarget;
+        const usuarioId = btn.getAttribute('data-usuario-id');
+        const roles = JSON.parse(btn.getAttribute('data-roles') || '[]');
+        const sucursales = JSON.parse(btn.getAttribute('data-sucursales') || '[]');
+
+        document.getElementById('editNombre').value = btn.getAttribute('data-nombre');
+        document.getElementById('editApellido').value = btn.getAttribute('data-apellido');
+        document.getElementById('editEmail').value = btn.getAttribute('data-email');
+        document.getElementById('editTelefono').value = btn.getAttribute('data-telefono');
+        document.getElementById('editActivo').checked = btn.getAttribute('data-activo') === 'true';
+        document.getElementById('formEditarUsuario').action = `/superadmin/usuarios/${usuarioId}/editar/`;
+
+        const rolActual = btn.getAttribute('data-rol');
+        const rolSelect = document.getElementById('editRol');
+        rolSelect.innerHTML = '<option value="">— Sin rol —</option>';
+        roles.forEach(function (r) {
+            rolSelect.innerHTML += `<option value="${r.id}" ${r.id == rolActual ? 'selected' : ''}>${r.nombre}</option>`;
+        });
+
+        const sucActual = btn.getAttribute('data-sucursal');
+        const sucSelect = document.getElementById('editSucursal');
+        sucSelect.innerHTML = '<option value="">— Sin sucursal —</option>';
+        sucursales.forEach(function (s) {
+            sucSelect.innerHTML += `<option value="${s.id}" ${s.id == sucActual ? 'selected' : ''}>${s.nombre}</option>`;
+        });
+    });
+
+    document.getElementById('btnConfirmarEditarUsuario').addEventListener('click', function () {
+        const nombre = document.getElementById('editNombre').value.trim();
+        const apellido = document.getElementById('editApellido').value.trim();
+        document.getElementById('confirmEditarUsuarioNombre').textContent = `${nombre} ${apellido}`;
+        bootstrap.Modal.getInstance(modalEditarUsuario).hide();
+        new bootstrap.Modal(document.getElementById('modalConfirmarEditarUsuario')).show();
+    });
+
+    document.getElementById('btnSubmitEditarUsuario').addEventListener('click', function () {
+        document.getElementById('formEditarUsuario').submit();
+    });
+});

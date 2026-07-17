@@ -254,3 +254,64 @@ def rechazar_pago(request, pago_id):
         messages.warning(request, 'Pago rechazado.')
         return redirect('/superadmin/pagos/')
     return redirect('/superadmin/pagos/')
+
+
+@superadmin_required
+def editar_usuario(request, usuario_id):
+    usuario = get_object_or_404(Usuario, id=usuario_id)
+    if request.method == 'POST':
+        usuario.nombre = request.POST.get('nombre', usuario.nombre)
+        usuario.apellido = request.POST.get('apellido', usuario.apellido)
+        usuario.email = request.POST.get('email', usuario.email)
+        usuario.telefono = request.POST.get('telefono', usuario.telefono)
+        usuario.activo = request.POST.get('activo') == 'on'
+        rol_id = request.POST.get('rol')
+        sucursal_id = request.POST.get('sucursal')
+        usuario.rol = get_object_or_404(Rol, id=rol_id) if rol_id else None
+        usuario.sucursal = get_object_or_404(Sucursal, id=sucursal_id) if sucursal_id else None
+        password = request.POST.get('password')
+        if password:
+            usuario.set_password(password)
+        usuario.save()
+        messages.success(request, f'Usuario {usuario.nombre_completo} actualizado.')
+        return redirect('/superadmin/tenants/')
+    return redirect('/superadmin/tenants/')
+
+
+@superadmin_required
+def editar_rol(request, tenant_id, rol_id):
+    tenant = get_object_or_404(Tenant, id=tenant_id)
+    rol = get_object_or_404(Rol, id=rol_id, tenant=tenant)
+    opciones = Opcion.objects.filter(activo=True).order_by('orden')
+
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        descripcion = request.POST.get('descripcion', '')
+        if nombre:
+            rol.nombre = nombre
+            rol.descripcion = descripcion
+            rol.save()
+            rol.permisos.all().delete()
+            for opcion in opciones:
+                puede_ver = request.POST.get(f'ver_{opcion.id}') == 'on'
+                puede_crear = request.POST.get(f'crear_{opcion.id}') == 'on'
+                puede_editar = request.POST.get(f'editar_{opcion.id}') == 'on'
+                puede_eliminar = request.POST.get(f'eliminar_{opcion.id}') == 'on'
+                if any([puede_ver, puede_crear, puede_editar, puede_eliminar]):
+                    RolPermiso.objects.create(
+                        rol=rol,
+                        opcion=opcion,
+                        puede_ver=puede_ver,
+                        puede_crear=puede_crear,
+                        puede_editar=puede_editar,
+                        puede_eliminar=puede_eliminar,
+                    )
+            messages.success(request, f'Rol "{rol.nombre}" actualizado.')
+            return redirect('/superadmin/tenants/')
+        messages.error(request, 'El nombre es obligatorio.')
+
+    return render(request, 'superadmin/editar_rol.html', {
+        'tenant': tenant,
+        'rol': rol,
+        'opciones': opciones,
+    })
